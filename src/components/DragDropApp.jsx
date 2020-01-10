@@ -5,17 +5,27 @@ const GRID_COLS = 6;
 class DragDropApp extends Component {
   constructor(props) {
     super(props);
-    const movableComponents = [];
+    const movableComponentProps = [];
     for (let i = 0; i < 4; ++i) {
-      movableComponents.push({ index: i });
+      const size = [(i%3)+1,1]; // [height, width]
+      movableComponentProps.push({ 
+        index: i, 
+        draggable: true, 
+        size: size,
+        style: {
+          gridRowStart:1,
+          gridRowEnd:size[0],
+          gridColumnStart:i+2
+        }
+      });
     }
     this.state = {
-      movableComponents: movableComponents
+      movableComponentProps: movableComponentProps
     };
   }
 
   render() {
-    console.log(this.state.movableComponents);
+    console.log(this.state.movableComponentProps);
     const divArr = [];
     for (let i = 0; i < GRID_ROWS; ++i) {
       for (let j = 0; j < GRID_COLS; ++j) {
@@ -31,10 +41,14 @@ class DragDropApp extends Component {
                 event.dataTransfer.getData("element-index")
               );
               this.setState(state => {
-                state.movableComponents[droppedElementIndex].style = {
+                const style = {
                   gridRowStart: parseInt(gridDropCoordinates[0]),
                   gridColumnStart: parseInt(gridDropCoordinates[1])
                 };
+                state.movableComponentProps[droppedElementIndex].style = {
+                  ...state.movableComponentProps[droppedElementIndex].style,
+                  ...style
+                }
                 return state;
               });
             }}
@@ -49,11 +63,9 @@ class DragDropApp extends Component {
       <div>
         <div className="drag-drop-app-base">{divArr}</div>
         <div className="drag-drop-app">
-          {this.state.movableComponents.map(i => (
+          {this.state.movableComponentProps.map(i => (
             <div
-              draggable
-              style={i.style}
-              index={i.index}
+              {...i}
               onDragStart={event =>
                 event.dataTransfer.setData("element-index", i.index)
               }
